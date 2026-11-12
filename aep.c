@@ -28,8 +28,17 @@ void cadastrarAcao() {
     int i; // Declarado aqui em cima para compatibilidade
     
     printf("\n--- CADASTRO DE ACAO DO PSE ---\n");
-    printf("Digite o codigo da acao: ");
-    scanf("%i", &codigoTemp);
+  printf("Digite o codigo da acao: ");
+
+resultado = scanf("%i", &codigoTemp);
+
+if (resultado != 1) {
+    printf("\nErro: Digite um codigo numerico valido!\n");
+
+    while (getchar() != '\n');
+
+    return;
+}
 
     for (i = 0; i < total; i++) {
         if (acoes[i].codigo == codigoTemp) {
