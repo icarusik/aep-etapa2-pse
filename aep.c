@@ -18,6 +18,17 @@ struct AcaoPSE {
 struct AcaoPSE acoes[MAX_ACOES];
 int total = 0;
 
+void lerTextoObrigatorio(char *mensagem, char *destino, int tamanho) {
+    do {
+        printf("%s", mensagem);
+        fgets(destino, tamanho, stdin);
+        destino[strcspn(destino, "\n")] = '\0';
+        if (strlen(destino) == 0) {
+            printf("Erro: Este campo e obrigatorio e nao pode ficar vazio!\n");
+        }
+    } while (strlen(destino) == 0);
+}
+
 void cadastrarAcao() {
     if (total >= MAX_ACOES) {
         printf("\nErro: Limite maximo de acoes atingido!\n");
@@ -25,20 +36,16 @@ void cadastrarAcao() {
     }
 
     int codigoTemp;
-    int i; // Declarado aqui em cima para compatibilidade
+    int i;
     
     printf("\n--- CADASTRO DE ACAO DO PSE ---\n");
-  printf("Digite o codigo da acao: ");
-
-resultado = scanf("%i", &codigoTemp);
-
-if (resultado != 1) {
-    printf("\nErro: Digite um codigo numerico valido!\n");
-
-    while (getchar() != '\n');
-
-    return;
-}
+    do {
+        printf("Digite o codigo da acao (maior que 0): ");
+        scanf("%i", &codigoTemp);
+        if (codigoTemp <= 0) {
+            printf("Erro: O codigo deve ser um numero positivo!\n");
+        }
+    } while (codigoTemp <= 0);
 
     for (i = 0; i < total; i++) {
         if (acoes[i].codigo == codigoTemp) {
@@ -48,27 +55,13 @@ if (resultado != 1) {
     }
 
     acoes[total].codigo = codigoTemp;
-    getchar(); // Limpa o buffer do teclado
+    getchar();
 
-    printf("Digite o nome da escola: ");
-    fgets(acoes[total].escola, 50, stdin);
-    acoes[total].escola[strcspn(acoes[total].escola, "\n")] = '\0';
-
-    printf("Digite o tema da acao: ");
-    fgets(acoes[total].tema, 50, stdin);
-    acoes[total].tema[strcspn(acoes[total].tema, "\n")] = '\0';
-
-    printf("Digite a data prevista (DD/MM/AAAA): ");
-    fgets(acoes[total].data_prevista, 15, stdin);
-    acoes[total].data_prevista[strcspn(acoes[total].data_prevista, "\n")] = '\0';
-
-    printf("Digite o publico-alvo: ");
-    fgets(acoes[total].publico_alvo, 50, stdin);
-    acoes[total].publico_alvo[strcspn(acoes[total].publico_alvo, "\n")] = '\0';
-
-    printf("Digite o nome do responsavel: ");
-    fgets(acoes[total].responsavel, 50, stdin);
-    acoes[total].responsavel[strcspn(acoes[total].responsavel, "\n")] = '\0';
+    lerTextoObrigatorio("Digite o nome da escola: ", acoes[total].escola, 50);
+    lerTextoObrigatorio("Digite o tema da acao: ", acoes[total].tema, 50);
+    lerTextoObrigatorio("Digite a data prevista (DD/MM/AAAA): ", acoes[total].data_prevista, 15);
+    lerTextoObrigatorio("Digite o publico-alvo: ", acoes[total].publico_alvo, 50);
+    lerTextoObrigatorio("Digite o nome do responsavel: ", acoes[total].responsavel, 50);
 
     do {
         printf("Digite a quantidade prevista de participantes: ");
@@ -85,26 +78,30 @@ if (resultado != 1) {
     printf("\n[Sucesso] Acao cadastrada com sucesso!\n");
 }
 
+void exibirAcao(int i) {
+    printf("Codigo: %i\n", acoes[i].codigo);
+    printf("Escola: %s\n", acoes[i].escola);
+    printf("Tema: %s\n", acoes[i].tema);
+    printf("Data: %s\n", acoes[i].data_prevista);
+    printf("Publico-Alvo: %s\n", acoes[i].publico_alvo);
+    printf("Responsavel: %s\n", acoes[i].responsavel);
+    printf("Previstos: %i | Efetivos: %i\n", acoes[i].qtd_prevista, acoes[i].qtd_efetiva);
+    printf("Status: %s\n", acoes[i].status);
+    printf("----------------------------------------\n");
+}
+
 void listarAcoes() {
     if (total == 0) {
         printf("\nNenhuma acao cadastrada no sistema.\n");
         return;
     }
 
-    int i; // Declarado aqui em cima
+    int i;
     printf("\n========================================\n");
     printf("         LISTAGEM DE ACOES DO PSE       \n");
     printf("========================================\n");
     for (i = 0; i < total; i++) {
-        printf("Codigo: %i\n", acoes[i].codigo);
-        printf("Escola: %s\n", acoes[i].escola);
-        printf("Tema: %s\n", acoes[i].tema);
-        printf("Data: %s\n", acoes[i].data_prevista);
-        printf("Publico-Alvo: %s\n", acoes[i].publico_alvo);
-        printf("Responsavel: %s\n", acoes[i].responsavel);
-        printf("Previstos: %i | Efetivos: %i\n", acoes[i].qtd_prevista, acoes[i].qtd_efetiva);
-        printf("Status: %s\n", acoes[i].status);
-        printf("----------------------------------------\n");
+        exibirAcao(i);
     }
 }
 
@@ -114,31 +111,53 @@ void pesquisarAcao() {
         return;
     }
 
-    int codigoBusca;
-    int i; // Declarado aqui em cima
-    printf("\n--- PESQUISAR ACAO POR CODIGO ---\n");
-    printf("Digite o codigo da acao desejada: ");
-    scanf("%i", &codigoBusca);
+    int tipoBusca, i, encontradas = 0;
+    printf("\n--- PESQUISAR ACAO ---\n");
+    printf("1 - Pesquisar por Codigo\n");
+    printf("2 - Pesquisar por Escola\n");
+    printf("3 - Pesquisar por Tema\n");
+    printf("Escolha o criterio de busca: ");
+    scanf("%i", &tipoBusca);
+    getchar();
 
-    int encontrada = 0;
-    for (i = 0; i < total; i++) {
-        if (acoes[i].codigo == codigoBusca) {
-            printf("\n[Acao Encontrada!]\n");
-            printf("Codigo: %i\n", acoes[i].codigo);
-            printf("Escola: %s\n", acoes[i].escola);
-            printf("Tema: %s\n", acoes[i].tema);
-            printf("Data: %s\n", acoes[i].data_prevista);
-            printf("Publico-Alvo: %s\n", acoes[i].publico_alvo);
-            printf("Responsavel: %s\n", acoes[i].responsavel);
-            printf("Previstos: %i | Efetivos: %i\n", acoes[i].qtd_prevista, acoes[i].qtd_efetiva);
-            printf("Status: %s\n", acoes[i].status);
-            encontrada = 1;
-            break;
+    if (tipoBusca == 1) {
+        int codigoBusca;
+        printf("Digite o codigo da acao: ");
+        scanf("%i", &codigoBusca);
+        for (i = 0; i < total; i++) {
+            if (acoes[i].codigo == codigoBusca) {
+                printf("\n[Acao Encontrada!]\n");
+                exibirAcao(i);
+                encontradas++;
+            }
         }
+    } else if (tipoBusca == 2) {
+        char escolaBusca[50];
+        lerTextoObrigatorio("Digite o nome (ou parte do nome) da escola: ", escolaBusca, 50);
+        for (i = 0; i < total; i++) {
+            if (strstr(acoes[i].escola, escolaBusca) != NULL) {
+                if (encontradas == 0) printf("\n[Acoes Encontradas!]\n");
+                exibirAcao(i);
+                encontradas++;
+            }
+        }
+    } else if (tipoBusca == 3) {
+        char temaBusca[50];
+        lerTextoObrigatorio("Digite o tema (ou parte do tema): ", temaBusca, 50);
+        for (i = 0; i < total; i++) {
+            if (strstr(acoes[i].tema, temaBusca) != NULL) {
+                if (encontradas == 0) printf("\n[Acoes Encontradas!]\n");
+                exibirAcao(i);
+                encontradas++;
+            }
+        }
+    } else {
+        printf("\nOpcao de busca invalida!\n");
+        return;
     }
 
-    if (!encontrada) {
-        printf("\nAcao com o codigo %i nao foi encontrada.\n", codigoBusca);
+    if (encontradas == 0) {
+        printf("\nNenhuma acao encontrada com o criterio informado.\n");
     }
 }
 
@@ -149,7 +168,7 @@ void atualizarSituacao() {
     }
 
     int codigoBusca;
-    int i; // Declarado aqui em cima
+    int i;
     printf("\n--- ATUALIZAR SITUACAO DA ACAO ---\n");
     printf("Digite o codigo da acao que deseja atualizar: ");
     scanf("%i", &codigoBusca);
@@ -210,7 +229,7 @@ void gerarResumo() {
     int contCancelada = 0;
     int totalPrevisto = 0;
     int totalEfetivo = 0;
-    int i; // Declarado aqui em cima
+    int i;
 
     for (i = 0; i < total; i++) {
         totalPrevisto += acoes[i].qtd_prevista;
@@ -260,7 +279,9 @@ int main() {
         printf("Escolha uma opcao: ");
         scanf("%i", &opcao);
 
-        if (opcao == 1) {
+        if (opcao == 0) {
+            printf("\nEncerrando o programa. Ate logo!\n");
+        } else if (opcao == 1) {
             cadastrarAcao();
         } else if (opcao == 2) {
             listarAcoes();
@@ -270,8 +291,6 @@ int main() {
             atualizarSituacao();
         } else if (opcao == 5) {
             gerarResumo();
-        } else if (opcao == 0) {
-            printf("\nEncerrando o programa. Ate logo!\n");
         } else {
             printf("\nOpcao invalida! Escolha uma opcao do menu.\n");
         }
